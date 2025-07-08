@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  picture   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  logs      Log[]
+}
+
+model Log {
+  id                String   @id @default(uuid())
+  date              DateTime @default(now())
+  mood              Int      // Scale 1-10
+  anxiety           Int      // Scale 1-10
+  sleepHours        Float?
+  sleepQuality      Int?     // Scale 1-5
+  sleepDisturbances Boolean?
+  physicalActivity  String?  // Type of activity
+  activityDuration  Int?     // Minutes
+  socialInteractions Int?    // Scale 1-5
+  stressLevel       Int?     // Scale 1-10
+  depressionSymptoms String?
+  anxietySymptoms   String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([date])
+  @@unique([userId, date])
+}
