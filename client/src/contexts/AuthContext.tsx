@@ -5,7 +5,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import axios from "axios";
+import { authAPI } from "../lib/api";
 
 // Define the User type
 export interface User {
@@ -28,9 +28,6 @@ interface AuthContextType {
 // Create the AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// API base URL
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
 // AuthProvider props
 interface AuthProviderProps {
   children: ReactNode;
@@ -42,15 +39,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user is already logged in on mount
+  // Check if user is authenticated on page load
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("authToken");
       if (token) {
+        setLoading(true);
         try {
-          await fetchUserInfo(token);
+          await fetchUserInfo();
         } catch (err) {
-          console.error("Authentication error:", err);
+          // If token is invalid, remove it
           localStorage.removeItem("authToken");
         } finally {
           setLoading(false);
@@ -64,13 +62,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   // Fetch user info from the backend
-  const fetchUserInfo = async (token: string) => {
+  const fetchUserInfo = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await authAPI.getCurrentUser();
       setUser(response.data);
       setError(null);
     } catch (err) {
@@ -81,12 +75,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Login function
-  const login = async (token: string) => {
+  const login = async (googleToken: string) => {
     setLoading(true);
     try {
+      // Exchange Google token for JWT token
+      const response = await authAPI.googleLogin(googleToken);
+      
+      // Get JWT token from response
+      const { token } = response.data;
+      
+      // Store JWT token in localStorage
       localStorage.setItem("authToken", token);
-      await fetchUserInfo(token);
+      
+      // Fetch user info using the JWT token
+      await fetchUserInfo();
     } catch (err) {
+      console.error("Login error:", err);
       setError("Login failed");
       throw err;
     } finally {

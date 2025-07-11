@@ -1,8 +1,23 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { Menu, X, Home, BarChart2, Calendar, Settings, LogOut } from 'lucide-react';
-import ThemeSwitcher from '../ui/theme-switcher';
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  BarChart2,
+  Calendar,
+  Home,
+  LogOut,
+  Menu,
+  Settings,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import ThemeSwitcher from "../ui/theme-switcher";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,11 +32,10 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center">
           <Link to="/" className="text-xl font-bold text-foreground">
-            MoodTrackr
+            Mood Tracker
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden items-center space-x-6 md:flex">
           <div className="mr-2">
             <ThemeSwitcher />
@@ -57,41 +71,45 @@ const Header = () => {
                 Settings
               </Link>
 
-              {/* User Menu */}
               <div className="relative ml-4 flex items-center">
-                <div className="flex items-center space-x-2">
-                  {user?.picture ? (
-                    <img
-                      src={user.picture}
-                      alt={user.name}
-                      className="h-8 w-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      {user?.name?.charAt(0) || 'U'}
-                    </div>
-                  )}
-                  <button
-                    onClick={logout}
-                    className="flex items-center text-muted-foreground hover:text-foreground"
-                  >
-                    <LogOut className="mr-1 h-4 w-4" />
-                    Sign Out
-                  </button>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full p-0"
+                    >
+                      {user?.picture ? (
+                        <img
+                          src={user.picture}
+                          alt={user.name}
+                          className="h-8 w-8 rounded-full"
+                        />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          {user?.name?.charAt(0) || "U"}
+                        </div>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="flex items-center gap-2"
+                      onClick={logout}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign Out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </>
           ) : (
-            <Link
-              to="/login"
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              Sign In
-            </Link>
+            <Button asChild>
+              <Link to="/login">Sign In</Link>
+            </Button>
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
         <button
           className="flex items-center md:hidden"
           onClick={toggleMenu}
@@ -105,12 +123,13 @@ const Header = () => {
         </button>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="border-t border-border bg-background px-4 py-2 md:hidden">
           <nav className="flex flex-col space-y-4 py-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Theme</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Theme
+              </span>
               <ThemeSwitcher />
             </div>
             {isAuthenticated ? (
@@ -159,13 +178,11 @@ const Header = () => {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="flex w-full items-center justify-center rounded-md bg-primary py-2 text-primary-foreground"
-                onClick={toggleMenu}
-              >
-                Sign In
-              </Link>
+              <Button className="w-full" asChild>
+                <Link to="/login" onClick={toggleMenu}>
+                  Sign In
+                </Link>
+              </Button>
             )}
           </nav>
         </div>

@@ -1,15 +1,22 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard");
@@ -20,24 +27,19 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       console.log("Google login successful", credentialResponse);
-      // Get the ID token from the response
       const token = credentialResponse.credential;
-      
+
       if (!token) {
         console.error("No credential token received from Google");
         return;
       }
 
-      // Call the login function from AuthContext
       await login(token);
-      
-      // Force a small delay to ensure state updates
+
       setTimeout(() => {
-        // Navigate to dashboard on successful login
         console.log("Redirecting to dashboard...");
         navigate("/dashboard", { replace: true });
       }, 100);
-      
     } catch (error) {
       console.error("Login error:", error);
     } finally {
@@ -144,65 +146,64 @@ export default function LoginPage() {
             </div>
 
             <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center relative">
-              <div className="space-y-8">
-                <div className="text-center lg:text-left">
-                  <h1 className="text-3xl font-bold text-card-foreground mb-2">
-                    Welcome!
-                  </h1>
-                  <p className="text-card-foreground/70">
-                    Sign in to your account
-                  </p>
-                </div>
+              <CardHeader className="text-center lg:text-left">
+                <CardTitle className="text-3xl">Welcome!</CardTitle>
+                <CardDescription>Sign in to your account</CardDescription>
+              </CardHeader>
 
-                {isLoading ? (
+              {isLoading ? (
+                <CardContent>
                   <div className="flex flex-col items-center justify-center py-12 space-y-4">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
                     <span className="text-card-foreground font-medium">
                       Signing in...
                     </span>
                   </div>
-                ) : (
-                  <div className="space-y-8">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-border/30"></div>
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card/10 backdrop-blur-sm px-3 text-card-foreground/60">
-                          Sign in with
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-center">
-                      <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={() => handleGoogleError("Login failed")}
-                        useOneTap
-                        shape="pill"
-                        text="continue_with"
-                        width="280px"
-                        type="standard"
-                        theme="outline"
-                        logo_alignment="center"
-                      />
-                    </div>
-
-                    <div className="text-center">
-                      <p className="text-card-foreground/60 text-xs">
-                        By continuing, you agree to our{" "}
-                        <button className="text-card-foreground hover:text-card-foreground/80 font-medium hover:underline transition-colors">
-                          Terms of Service
-                        </button>{" "}
-                        and{" "}
-                        <button className="text-card-foreground hover:text-card-foreground/80 font-medium hover:underline transition-colors">
-                          Privacy Policy
-                        </button>
-                      </p>
-                    </div>
+                </CardContent>
+              ) : (
+                <CardContent className="space-y-8 mt-4">
+                  <div className="flex items-center justify-center">
+                    <Separator className="shrink w-1/3" />
+                    <span className="px-3 text-xs uppercase text-card-foreground/60 whitespace-nowrap">
+                      Sign in with
+                    </span>
+                    <Separator className="shrink w-1/3" />
                   </div>
-                )}
-              </div>
+
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => handleGoogleError("Login failed")}
+                      useOneTap
+                      shape="pill"
+                      text="continue_with"
+                      width="280px"
+                      type="standard"
+                      theme="outline"
+                      logo_alignment="center"
+                    />
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-card-foreground/60 text-xs">
+                      By continuing, you agree to our{" "}
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-xs font-medium"
+                      >
+                        Terms of Service
+                      </Button>{" "}
+                      and{" "}
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-xs font-medium"
+                      >
+                        Privacy Policy
+                      </Button>
+                    </p>
+                  </div>
+                </CardContent>
+              )}
             </div>
           </div>
         </CardContent>
