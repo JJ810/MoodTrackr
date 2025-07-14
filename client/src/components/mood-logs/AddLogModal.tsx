@@ -1,17 +1,12 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import type { SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -21,9 +16,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup } from "@/components/ui/radio-group";
+import { RatingWithEmoji } from "@/components/ui/rating-with-emoji";
 import {
   Select,
   SelectContent,
@@ -32,28 +26,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TooltipWrapper } from "@/components/ui/tooltip-wrapper";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { useState } from "react";
+import type { SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
-// Define the form schema with Zod
 const formSchema = z.object({
   date: z.string(),
   mood: z.number().min(1).max(5),
   anxiety: z.number().min(1).max(5),
   stressLevel: z.number().min(1).max(5),
-  sleepHours: z.number().min(0).max(24).optional(),
-  sleepQuality: z.enum(["poor", "fair", "good", "excellent"]).optional(),
+  sleepHours: z.number().min(0).max(24),
+  sleepQuality: z.enum(["poor", "fair", "good", "excellent"]),
   sleepDisturbances: z.array(z.string()).optional(),
-  physicalActivity: z.array(z.string()).optional(),
+  physicalActivity: z.array(z.string()),
   activityDuration: z.number().min(0).optional(),
-  socialInteractions: z
-    .enum(["none", "minimal", "moderate", "high"])
-    .optional(),
+  socialInteractions: z.enum(["none", "minimal", "moderate", "high"]),
   depressionSymptoms: z.array(z.string()).optional(),
   anxietySymptoms: z.array(z.string()).optional(),
-  notes: z.string().optional(),
 });
 
-// Infer the type from the schema
 type FormValues = z.infer<typeof formSchema>;
 
 interface AddLogModalProps {
@@ -119,7 +114,7 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/logs`, values, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
       toast.success("Log added successfully");
@@ -185,21 +180,11 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                         className="flex space-x-2"
                       >
                         {[1, 2, 3, 4, 5].map((value) => (
-                          <FormItem
+                          <RatingWithEmoji
                             key={value}
-                            className="flex flex-col items-center space-y-1"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={value.toString()} />
-                            </FormControl>
-                            <FormLabel>
-                              {value === 1
-                                ? "Very Low"
-                                : value === 5
-                                ? "Very High"
-                                : ""}
-                            </FormLabel>
-                          </FormItem>
+                            value={value}
+                            type="mood"
+                          />
                         ))}
                       </RadioGroup>
                     </FormControl>
@@ -228,21 +213,11 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                         className="flex space-x-2"
                       >
                         {[1, 2, 3, 4, 5].map((value) => (
-                          <FormItem
+                          <RatingWithEmoji
                             key={value}
-                            className="flex flex-col items-center space-y-1"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={value.toString()} />
-                            </FormControl>
-                            <FormLabel>
-                              {value === 1
-                                ? "Very Low"
-                                : value === 5
-                                ? "Very High"
-                                : ""}
-                            </FormLabel>
-                          </FormItem>
+                            value={value}
+                            type="anxiety"
+                          />
                         ))}
                       </RadioGroup>
                     </FormControl>
@@ -271,21 +246,11 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                         className="flex space-x-2"
                       >
                         {[1, 2, 3, 4, 5].map((value) => (
-                          <FormItem
+                          <RatingWithEmoji
                             key={value}
-                            className="flex flex-col items-center space-y-1"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={value.toString()} />
-                            </FormControl>
-                            <FormLabel>
-                              {value === 1
-                                ? "Very Low"
-                                : value === 5
-                                ? "Very High"
-                                : ""}
-                            </FormLabel>
-                          </FormItem>
+                            value={value}
+                            type="stress"
+                          />
                         ))}
                       </RadioGroup>
                     </FormControl>
@@ -457,7 +422,7 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                   <FormItem>
                     <div className="flex items-center gap-2">
                       <FormLabel>Duration (minutes)</FormLabel>
-                      <TooltipWrapper content="How many minutes did you spend on physical activity?">
+                      <TooltipWrapper content="How long did you exercise for?">
                         <span className="text-muted-foreground text-sm">ⓘ</span>
                       </TooltipWrapper>
                     </div>
@@ -475,37 +440,41 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="socialInteractions"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center gap-2">
-                    <FormLabel>Social Interactions</FormLabel>
-                    <TooltipWrapper content="How much did you interact with others today?">
-                      <span className="text-muted-foreground text-sm">ⓘ</span>
-                    </TooltipWrapper>
-                  </div>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select level of social interaction" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="minimal">Minimal</SelectItem>
-                      <SelectItem value="moderate">Moderate</SelectItem>
-                      <SelectItem value="extensive">Extensive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Social Interactions</h3>
+
+              <FormField
+                control={form.control}
+                name="socialInteractions"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Social Interaction Level</FormLabel>
+                      <TooltipWrapper content="How much did you socialize today?">
+                        <span className="text-muted-foreground text-sm">ⓘ</span>
+                      </TooltipWrapper>
+                    </div>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select interaction level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="minimal">Minimal</SelectItem>
+                        <SelectItem value="moderate">Moderate</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Symptoms</h3>
@@ -517,7 +486,7 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                   <FormItem>
                     <div className="flex items-center gap-2">
                       <FormLabel>Depression Symptoms</FormLabel>
-                      <TooltipWrapper content="Did you experience any of these symptoms today?">
+                      <TooltipWrapper content="Did you experience any depression symptoms today?">
                         <span className="text-muted-foreground text-sm">ⓘ</span>
                       </TooltipWrapper>
                     </div>
@@ -562,7 +531,7 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                   <FormItem>
                     <div className="flex items-center gap-2">
                       <FormLabel>Anxiety Symptoms</FormLabel>
-                      <TooltipWrapper content="Did you experience any of these symptoms today?">
+                      <TooltipWrapper content="Did you experience any anxiety symptoms today?">
                         <span className="text-muted-foreground text-sm">ⓘ</span>
                       </TooltipWrapper>
                     </div>
@@ -601,31 +570,13 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center gap-2">
-                    <FormLabel>Additional Notes</FormLabel>
-                    <TooltipWrapper content="Any additional thoughts or feelings you want to record">
-                      <span className="text-muted-foreground text-sm">ⓘ</span>
-                    </TooltipWrapper>
-                  </div>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter any additional notes here..."
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
