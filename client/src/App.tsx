@@ -1,3 +1,4 @@
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import {
   Navigate,
   Route,
@@ -6,11 +7,11 @@ import {
 } from "react-router-dom";
 import Login from "./components/auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Dashboard from "./components/dashboard/Dashboard";
+import Dashboard from "./components/dashboard";
+import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -28,9 +29,9 @@ function App() {
       <ThemeProvider defaultTheme="system">
         <AuthProvider>
           <Router>
-            <div className="flex flex-col bg-background text-foreground h-screen">
+            <div className="flex flex-col bg-background text-foreground min-h-screen">
               <Header />
-              <main className="flex-1 h-[calc(100%-8rem)]">
+              <main className="">
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route element={<ProtectedRoute />}>
@@ -46,11 +47,7 @@ function App() {
                   />
                 </Routes>
               </main>
-              <footer className="border-t border-border py-4 text-center text-sm text-muted-foreground">
-                <div className="container mx-auto">
-                  © {new Date().getFullYear()} MoodTrackr. All rights reserved.
-                </div>
-              </footer>
+              <Footer />
             </div>
           </Router>
         </AuthProvider>

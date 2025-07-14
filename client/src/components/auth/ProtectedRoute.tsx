@@ -1,11 +1,11 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ProtectedRouteProps {
   redirectPath?: string;
 }
 
-const ProtectedRoute = ({ redirectPath = '/login' }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ redirectPath = "/login" }: ProtectedRouteProps) => {
   const { isAuthenticated, loading } = useAuth();
 
   // Show loading state while checking authentication
@@ -22,7 +22,6 @@ const ProtectedRoute = ({ redirectPath = '/login' }: ProtectedRouteProps) => {
     return <Navigate to={redirectPath} replace />;
   }
 
-  // Render child routes if authenticated
   return <Outlet />;
 };
 

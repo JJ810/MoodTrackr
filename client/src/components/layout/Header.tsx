@@ -41,68 +41,37 @@ const Header = () => {
             <ThemeSwitcher />
           </div>
           {isAuthenticated ? (
-            <>
-              <Link
-                to="/dashboard"
-                className="flex items-center text-muted-foreground hover:text-foreground"
-              >
-                <Home className="mr-1 h-4 w-4" />
-                Dashboard
-              </Link>
-              <Link
-                to="/logs"
-                className="flex items-center text-muted-foreground hover:text-foreground"
-              >
-                <Calendar className="mr-1 h-4 w-4" />
-                Logs
-              </Link>
-              <Link
-                to="/analytics"
-                className="flex items-center text-muted-foreground hover:text-foreground"
-              >
-                <BarChart2 className="mr-1 h-4 w-4" />
-                Analytics
-              </Link>
-              <Link
-                to="/settings"
-                className="flex items-center text-muted-foreground hover:text-foreground"
-              >
-                <Settings className="mr-1 h-4 w-4" />
-                Settings
-              </Link>
-
-              <div className="relative ml-4 flex items-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-8 w-8 rounded-full p-0"
-                    >
-                      {user?.picture ? (
-                        <img
-                          src={user.picture}
-                          alt={user.name}
-                          className="h-8 w-8 rounded-full"
-                        />
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          {user?.name?.charAt(0) || "U"}
-                        </div>
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="flex items-center gap-2"
-                      onClick={logout}
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Sign Out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </>
+            <div className="relative ml-4 flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full p-0"
+                  >
+                    {user?.picture ? (
+                      <img
+                        src={user.picture}
+                        alt={user.name}
+                        className="h-8 w-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        {user?.name?.charAt(0) || "U"}
+                      </div>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="flex items-center gap-2"
+                    onClick={logout}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <Button asChild>
               <Link to="/login">Sign In</Link>
