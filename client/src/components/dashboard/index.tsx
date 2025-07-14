@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../contexts/AuthContext";
 import { PlusCircle, BarChart2 } from "lucide-react";
-import MoodChart from "../mood-logs/MoodChart";
+import { MoodChart } from "../mood-logs/MoodChart";
 import AddLogModal from "../mood-logs/AddLogModal";
 
 const Dashboard = () => {

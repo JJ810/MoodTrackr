@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Dashboard from "./components/dashboard";
 import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
+import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -48,6 +49,7 @@ function App() {
                 </Routes>
               </main>
               <Footer />
+              <Toaster />
             </div>
           </Router>
         </AuthProvider>

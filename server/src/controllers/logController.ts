@@ -55,22 +55,43 @@ export const createLog = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Map form values to database schema
+    // Convert sleepQuality from string to number
+    let sleepQualityValue: number | null = null;
+    if (sleepQuality === 'poor') sleepQualityValue = 1;
+    else if (sleepQuality === 'fair') sleepQualityValue = 2;
+    else if (sleepQuality === 'good') sleepQualityValue = 3;
+    else if (sleepQuality === 'excellent') sleepQualityValue = 4;
+
+    // Convert socialInteractions from string to number
+    let socialInteractionsValue: number | null = null;
+    if (socialInteractions === 'none') socialInteractionsValue = 1;
+    else if (socialInteractions === 'minimal') socialInteractionsValue = 2;
+    else if (socialInteractions === 'moderate') socialInteractionsValue = 3;
+    else if (socialInteractions === 'high') socialInteractionsValue = 4;
+
+    // Convert arrays to strings for storage
+    const physicalActivityStr = Array.isArray(physicalActivity) ? physicalActivity.join(',') : physicalActivity;
+    const sleepDisturbancesValue = Array.isArray(sleepDisturbances) ? sleepDisturbances.length > 0 : !!sleepDisturbances;
+    const depressionSymptomsStr = Array.isArray(depressionSymptoms) ? depressionSymptoms.join(',') : depressionSymptoms;
+    const anxietySymptomsStr = Array.isArray(anxietySymptoms) ? anxietySymptoms.join(',') : anxietySymptoms;
+
     const log = await prisma.log.create({
       data: {
         userId,
         date: new Date(date || new Date()),
         mood,
         anxiety,
-        sleepHours,
-        sleepQuality,
-        sleepDisturbances,
-        physicalActivity,
-        activityDuration,
-        socialInteractions,
+        sleepHours: sleepHours || null,
+        sleepQuality: sleepQualityValue,
+        sleepDisturbances: sleepDisturbancesValue,
+        physicalActivity: physicalActivityStr,
+        activityDuration: activityDuration || null,
+        socialInteractions: socialInteractionsValue,
         stressLevel,
-        depressionSymptoms,
-        anxietySymptoms,
-        notes
+        depressionSymptoms: depressionSymptomsStr,
+        anxietySymptoms: anxietySymptomsStr,
+        notes: notes || null
       }
     });
 

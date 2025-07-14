@@ -123,7 +123,31 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
       onClose();
     } catch (error: any) {
       console.error("Error adding log:", error);
-      toast.error(error.response?.data?.message || "Failed to add log");
+
+      if (error.response) {
+        const statusCode = error.response.status;
+        const errorMessage = error.response?.data?.message;
+
+        if (statusCode === 401 || statusCode === 403) {
+          toast.error("Authentication error: Please log in again");
+        } else if (statusCode === 409) {
+          toast.error("A log already exists for this date");
+        } else if (statusCode === 400) {
+          toast.error(errorMessage || "Invalid data submitted");
+        } else {
+          toast.error(
+            errorMessage || `Server error (${statusCode}): Failed to add log`
+          );
+        }
+      } else if (error.request) {
+        toast.error(
+          "No response from server. Please check your internet connection."
+        );
+      } else {
+        toast.error(
+          "Failed to send request: " + (error.message || "Unknown error")
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -275,14 +299,22 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
                       </TooltipWrapper>
                     </div>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="24"
-                        step="0.5"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                      />
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="24"
+                          step="0.5"
+                          className="pr-16"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
+                          Hour{field.value !== 1 ? "s" : ""}
+                        </div>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -574,7 +606,10 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={() => {
+                  form.reset();
+                  onClose();
+                }}
                 disabled={isSubmitting}
               >
                 Cancel
