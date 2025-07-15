@@ -53,7 +53,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-4">
+    <div className="h-full w-full flex items-center justify-center p-4 my-auto">
       <Card className="w-full max-w-4xl bg-card/10 backdrop-blur-sm border-border/20 rounded-3xl overflow-hidden shadow-2xl">
         <CardContent className="p-0">
           <div className="flex flex-col lg:flex-row">
@@ -182,25 +182,6 @@ export default function LoginPage() {
                       theme="outline"
                       logo_alignment="center"
                     />
-                  </div>
-
-                  <div className="text-center">
-                    <p className="text-card-foreground/60 text-xs">
-                      By continuing, you agree to our{" "}
-                      <Button
-                        variant="link"
-                        className="h-auto p-0 text-xs font-medium"
-                      >
-                        Terms of Service
-                      </Button>{" "}
-                      and{" "}
-                      <Button
-                        variant="link"
-                        className="h-auto p-0 text-xs font-medium"
-                      >
-                        Privacy Policy
-                      </Button>
-                    </p>
                   </div>
                 </CardContent>
               )}

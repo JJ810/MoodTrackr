@@ -1,20 +1,33 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import useMoodStore from "@/stores/useMoodStore";
+import { BarChart2, PlusCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { PlusCircle, BarChart2 } from "lucide-react";
-import { MoodChart } from "../mood-logs/MoodChart";
 import AddLogModal from "../mood-logs/AddLogModal";
+import { MoodChart } from "../mood-logs/MoodChart";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [isAddLogModalOpen, setIsAddLogModalOpen] = useState(false);
+  const { initializeSocket, disconnectSocket, fetchData } = useMoodStore();
+
+  useEffect(() => {
+    console.log("Dashboard: Initializing WebSocket connection");
+    initializeSocket();
+    fetchData();
+
+    return () => {
+      console.log("Dashboard: Cleaning up WebSocket connection");
+      disconnectSocket();
+    };
+  }, []);
 
   const handleAddLogClick = () => {
     setIsAddLogModalOpen(true);
@@ -22,11 +35,6 @@ const Dashboard = () => {
 
   const handleModalClose = () => {
     setIsAddLogModalOpen(false);
-  };
-
-  const handleLogSuccess = () => {
-    // This will be called after a successful log submission
-    // The chart will update automatically via WebSocket
   };
 
   return (
@@ -46,7 +54,7 @@ const Dashboard = () => {
 
               <Button
                 onClick={handleAddLogClick}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md w-full md:w-auto"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md w-full md:w-auto cursor-pointer"
                 size="lg"
               >
                 <PlusCircle className="h-5 w-5" />
@@ -77,11 +85,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      <AddLogModal
-        isOpen={isAddLogModalOpen}
-        onClose={handleModalClose}
-        onSuccess={handleLogSuccess}
-      />
+      <AddLogModal isOpen={isAddLogModalOpen} onClose={handleModalClose} />
     </div>
   );
 };

@@ -54,7 +54,6 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddLogModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
 const sleepDisturbanceOptions = [
@@ -92,7 +91,7 @@ const anxietySymptomOptions = [
   { id: "racing-thoughts", label: "Racing thoughts" },
 ];
 
-export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
+export function AddLogModal({ isOpen, onClose }: AddLogModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
@@ -117,9 +116,9 @@ export function AddLogModal({ isOpen, onClose, onSuccess }: AddLogModalProps) {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
+
       toast.success("Log added successfully");
       form.reset();
-      onSuccess();
       onClose();
     } catch (error: any) {
       console.error("Error adding log:", error);

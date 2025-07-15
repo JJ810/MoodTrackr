@@ -32,7 +32,7 @@ function App() {
           <Router>
             <div className="flex flex-col bg-background text-foreground min-h-screen">
               <Header />
-              <main className="">
+              <main className="h-full flex flex-1">
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route element={<ProtectedRoute />}>
