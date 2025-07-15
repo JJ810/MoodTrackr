@@ -23,7 +23,7 @@ export function MoodChart() {
         <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
           <LineChartIcon className="h-5 w-5" /> Mood Metrics
         </h2>
-        <div className="flex space-x-2 w-full sm:w-auto">
+        <div className="flex space-x-2 w-full sm:w-auto chart-controls">
           <Button
             variant={viewMode === "weekly" ? "default" : "outline"}
             size="sm"
