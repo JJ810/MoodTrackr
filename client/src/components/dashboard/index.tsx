@@ -116,24 +116,23 @@ const Dashboard = () => {
                 </CardDescription>
               </div>
 
-              <div className="flex gap-2 w-full md:w-auto">
+              <div className="flex flex-row gap-2 w-full md:w-auto">
                 <Button
                   onClick={handleAddLogClick}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md w-full md:w-auto cursor-pointer add-log-button"
+                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md flex-1 md:flex-none cursor-pointer add-log-button"
                   size="lg"
                 >
                   <PlusCircle className="h-5 w-5" />
-                  Add New Log
+                  <span className="md:inline">Add New Log</span>
                 </Button>
 
                 <Button
                   onClick={startTour}
                   variant="outline"
-                  className="flex items-center gap-2 shadow-md cursor-pointer help-button"
-                  size="lg"
+                  className="flex items-center justify-center gap-2 shadow-md cursor-pointer help-button"
+                  size="icon"
                 >
                   <HelpCircle className="h-5 w-5" />
-                  Help
                 </Button>
               </div>
             </div>

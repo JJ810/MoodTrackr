@@ -325,7 +325,7 @@ export const getLogsSummary = async (req: Request, res: Response): Promise<void>
         .filter((value: unknown) => value !== null && value !== undefined);
 
       if (values.length > 0) {
-        averages[metric] = values.reduce((sum: number, val: number) => sum + val, 0) / values.length;
+        averages[metric] = values.reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0) / values.length;
       }
     });
 
