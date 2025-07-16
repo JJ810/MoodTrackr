@@ -12,19 +12,24 @@ let io: SocketIOServer;
 export const initializeSocketIO = (httpServer: HttpServer): void => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: config.cors.origin,
-      methods: ['GET', 'POST'],
+      origin: config.cors.origin, // Use the configured origin from config
+      methods: ['GET', 'POST', 'OPTIONS'],
       credentials: true
     },
     transports: ['websocket', 'polling'],
     pingTimeout: 30000,
     pingInterval: 25000,
-    connectTimeout: 20000
+    connectTimeout: 20000,
+    allowEIO3: true // Allow Engine.IO v3 clients
+  });
+
+  io.engine.on('connection_error', (err) => {
+    console.error('Socket.IO connection error:', err);
   });
 
   io.use((socket, next) => {
+
     const token = socket.handshake.auth.token;
-    console.log('Socket auth attempt:', socket.id);
 
     if (!token) {
       console.log('Socket auth failed: No token provided');
@@ -54,16 +59,28 @@ export const initializeSocketIO = (httpServer: HttpServer): void => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.data.user.email}`);
+    console.log(`User connected: ${socket.data.user?.email || 'unknown'}`);
 
-    socket.join(`user-${socket.data.user.id}`);
+    if (socket.data.user) {
+      socket.join(`user-${socket.data.user.id}`);
+    }
 
-    socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.data.user.email}`);
+    socket.on('disconnect', (reason) => {
+      console.log(`User disconnected: ${socket.data.user?.email || 'unknown'}. Reason: ${reason}`);
+    });
+
+    socket.on('error', (error) => {
+      console.error(`Socket error for user ${socket.data.user?.email || 'unknown'}:`, error);
     });
   });
 
-  console.log('Socket.IO initialized');
+  console.log('Socket.IO initialized successfully');
+
+  // Debug: Log when server emits events
+  const originalEmit = io.emit;
+  io.emit = function (event, ...args) {
+    return originalEmit.apply(this, [event, ...args]);
+  };
 };
 
 /**

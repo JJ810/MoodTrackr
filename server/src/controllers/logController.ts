@@ -1,6 +1,13 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { emitLogCreated, emitLogUpdated, emitLogDeleted } from '../services/socketService';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Initialize dayjs plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const prisma = new PrismaClient();
 
@@ -79,7 +86,9 @@ export const createLog = async (req: Request, res: Response): Promise<void> => {
     const log = await prisma.log.create({
       data: {
         userId,
-        date: new Date(date || new Date()),
+        // Use dayjs to handle the date with timezone consideration
+        // Parse the date string and create a date object at noon to avoid timezone issues
+        date: dayjs(date || dayjs().format('YYYY-MM-DD')).hour(12).minute(0).second(0).toDate(),
         mood,
         anxiety,
         sleepHours: sleepHours || null,

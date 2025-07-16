@@ -1,69 +1,101 @@
-# React + TypeScript + Vite
+# MoodTrackr Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend for the MoodTrackr mental health tracking application, built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Dashboard**: Interactive dashboard displaying mental health metrics and trends
+- **Daily Log Form**: Comprehensive form for recording daily mental health status
+- **Data Visualization**: Interactive charts showing mood, anxiety, and other metrics over time
+- **Real-time Updates**: WebSocket integration for immediate data reflection
+- **Responsive Design**: Mobile-first approach ensuring usability across all devices
+- **Interactive Tour**: Guided onboarding experience for new users
+- **Authentication**: Secure login with Google OAuth
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **React 18** with TypeScript for UI development
+- **Vite** for fast development and optimized builds
+- **Tailwind CSS** for utility-first styling
+- **Shadcn/UI** for accessible, customizable UI components
+- **Zustand** for state management
+- **Socket.IO Client** for real-time WebSocket communication
+- **Recharts** library for data visualization
+- **React Router** for client-side routing
+- **Intro.js** for interactive user tours
+- **Vitest** for unit and component testing
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Project Structure
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── assets/          # Static assets like images
+├── components/      # Reusable UI components
+│   ├── auth/        # Authentication-related components
+│   ├── dashboard/   # Dashboard-related components
+│   ├── layout/      # Layout components (header, footer, etc.)
+│   ├── mood-logs/   # Components for logging and displaying mood data
+│   └── ui/          # Base UI components (buttons, inputs, etc.)
+├── contexts/        # React context providers
+├── lib/             # Utility functions and helpers
+├── pages/           # Page components (empty directory for future use)
+├── stores/          # Zustand state stores
+├── test/            # Test setup and utilities
+└── types/           # TypeScript type definitions (empty directory for future use)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (v22+)
+- npm or yarn
+
+### Installation
+
+1. Install dependencies
+
+```bash
+npm install
 ```
+
+2. Set up environment variables
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your API URL and other settings
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+This starts the development server at `http://localhost:5173`
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+Built files will be in the `dist` directory
+
+### Running Tests
+
+```bash
+npm test
+```
+
+For test coverage:
+
+```bash
+npm test -- --coverage
+```
+
+## Code Quality
+
+- ESLint for code linting
+- Prettier for code formatting
+- TypeScript for static type checking

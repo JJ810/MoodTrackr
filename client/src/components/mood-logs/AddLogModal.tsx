@@ -26,16 +26,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TooltipWrapper } from "@/components/ui/tooltip-wrapper";
-import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+
+// Initialize dayjs plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(isSameOrBefore);
 
 const formSchema = z.object({
-  date: z.string(),
+  date: z.string().refine(
+    (date) => {
+      const selectedDate = dayjs(date);
+      const today = dayjs().startOf("day");
+      return selectedDate.isSameOrBefore(today);
+    },
+    { message: "Date cannot be in the future" }
+  ),
   mood: z.number().min(1).max(5),
   anxiety: z.number().min(1).max(5),
   stressLevel: z.number().min(1).max(5),
@@ -97,7 +113,7 @@ export function AddLogModal({ isOpen, onClose }: AddLogModalProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: new Date().toISOString().split("T")[0],
+      date: dayjs().format("YYYY-MM-DD"),
       mood: 3,
       anxiety: 3,
       stressLevel: 3,
@@ -108,43 +124,92 @@ export function AddLogModal({ isOpen, onClose }: AddLogModalProps) {
     },
   });
 
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset();
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
+
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/logs`, values, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      // Convert form values to match database schema
+      const formattedValues = {
+        date: dayjs(values.date).format("YYYY-MM-DD"), // Format as YYYY-MM-DD for consistent timezone handling
+        mood: values.mood,
+        anxiety: values.anxiety,
+        sleepHours: values.sleepHours,
+        sleepQuality: (() => {
+          // Convert string enum to number (1-5)
+          switch (values.sleepQuality) {
+            case "poor": return 1;
+            case "fair": return 2;
+            case "good": return 3;
+            case "excellent": return 4;
+            default: return 2; // Default to fair
+          }
+        })(),
+        sleepDisturbances: values.sleepDisturbances && values.sleepDisturbances.length > 0,
+        physicalActivity: values.physicalActivity.join(','),
+        activityDuration: values.activityDuration,
+        socialInteractions: (() => {
+          // Convert string enum to number (1-5)
+          switch (values.socialInteractions) {
+            case "none": return 1;
+            case "minimal": return 2;
+            case "moderate": return 3;
+            case "high": return 4;
+            default: return 1;
+          }
+        })(),
+        stressLevel: values.stressLevel,
+        depressionSymptoms: values.depressionSymptoms?.join(',') || '',
+        anxietySymptoms: values.anxietySymptoms?.join(',') || '',
+      };
+
+      console.log("Submitting log with formatted values:", formattedValues);
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/logs`,
+        formattedValues,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
       toast.success("Log added successfully");
       form.reset();
       onClose();
-    } catch (error: any) {
-      console.error("Error adding log:", error);
+    } catch (error) {
+      const err = error as {
+        response?: { status: number; data?: { message: string } };
+      };
+      console.error("Error adding log:", err);
 
-      if (error.response) {
-        const statusCode = error.response.status;
-        const errorMessage = error.response?.data?.message;
+      if (err.response) {
+        const statusCode = err.response.status;
+        const errorMessage = err.response?.data?.message;
 
         if (statusCode === 401 || statusCode === 403) {
           toast.error("Authentication error: Please log in again");
         } else if (statusCode === 409) {
-          toast.error("A log already exists for this date");
-        } else if (statusCode === 400) {
-          toast.error(errorMessage || "Invalid data submitted");
+          toast.error("You already have a log for this date");
+        } else if (errorMessage) {
+          toast.error(errorMessage);
         } else {
-          toast.error(
-            errorMessage || `Server error (${statusCode}): Failed to add log`
-          );
+          toast.error("Failed to add log");
         }
-      } else if (error.request) {
+      } else if ((err as { request?: unknown }).request) {
         toast.error(
           "No response from server. Please check your internet connection."
         );
       } else {
         toast.error(
-          "Failed to send request: " + (error.message || "Unknown error")
+          "Failed to send request: " +
+            ((err as { message?: string }).message || "Unknown error")
         );
       }
     } finally {
@@ -162,10 +227,7 @@ export function AddLogModal({ isOpen, onClose }: AddLogModalProps) {
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit as any)}
-            className="space-y-6"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="date"

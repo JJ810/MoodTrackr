@@ -11,7 +11,7 @@ import introJs from "intro.js";
 import "intro.js/introjs.css";
 import { BarChart2, HelpCircle, PlusCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/auth-hooks";
 import AddLogModal from "../mood-logs/AddLogModal";
 import { MoodChart } from "../mood-logs/MoodChart";
 
@@ -26,6 +26,13 @@ const Dashboard = () => {
     initializeSocket();
     fetchData();
 
+    return () => {
+      console.log("Dashboard: Cleaning up WebSocket connection");
+      disconnectSocket();
+    };
+  }, []);
+
+  useEffect(() => {
     const hasSeenTour = localStorage.getItem("hasSeenTour");
     if (!hasSeenTour && !tourStartedRef.current) {
       tourStartedRef.current = true;
@@ -33,11 +40,6 @@ const Dashboard = () => {
         startTour();
       }, 500);
     }
-
-    return () => {
-      console.log("Dashboard: Cleaning up WebSocket connection");
-      disconnectSocket();
-    };
   }, []);
 
   const startTour = () => {

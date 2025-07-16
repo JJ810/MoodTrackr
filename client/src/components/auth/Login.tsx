@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,47 +6,60 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth-hooks";
 import { GoogleLogin } from "@react-oauth/google";
+import type { CredentialResponse } from "@react-oauth/google";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard");
+    if (isAuthenticated && !loading) {
+      navigate("/dashboard", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, loading, navigate]);
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
     setIsLoading(true);
     try {
-      console.log("Google login successful", credentialResponse);
+      console.log("Google login successful", {
+        hasCredential: !!credentialResponse.credential,
+        credentialLength: credentialResponse.credential?.length || 0,
+        clientId: credentialResponse.clientId,
+        selectBy: credentialResponse.select_by,
+      });
+
       const token = credentialResponse.credential;
 
       if (!token) {
         console.error("No credential token received from Google");
+        toast.error(
+          "Authentication failed: No credential received from Google"
+        );
         return;
       }
 
+      // Attempt to login with the token
       await login(token);
 
-      setTimeout(() => {
-        console.log("Redirecting to dashboard...");
-        navigate("/dashboard", { replace: true });
-      }, 100);
+      console.log("Login successful, redirecting to dashboard...");
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("Login failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleError = (error: any) => {
+  const handleGoogleError = (error: unknown) => {
     console.error("Google login failed:", error);
     setIsLoading(false);
   };

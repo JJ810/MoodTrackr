@@ -1,45 +1,20 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
-import { authAPI } from "../lib/api";
+import { useState, useEffect, type ReactNode } from "react";
+import { AuthContext } from "./auth-context";
+import { authService } from "../lib/api/auth.service";
+import type { User } from "../lib/api/types";
+import { toast } from "sonner";
 
-// Define the User type
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  picture?: string;
-}
+// Using User type from API types
 
-// Define the AuthContext type
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-  isAuthenticated: boolean;
-  login: (token: string) => Promise<void>;
-  logout: () => void;
-}
-
-// Create the AuthContext
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// AuthProvider props
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Create the AuthProvider component
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user is authenticated on page load
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("authToken");
@@ -47,8 +22,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setLoading(true);
         try {
           await fetchUserInfo();
-        } catch (err) {
-          // If token is invalid, remove it
+        } catch (error) {
+          console.error("Authentication error:", error);
           localStorage.removeItem("authToken");
         } finally {
           setLoading(false);
@@ -61,67 +36,78 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkAuth();
   }, []);
 
-  // Fetch user info from the backend
   const fetchUserInfo = async () => {
     try {
-      const response = await authAPI.getCurrentUser();
-      setUser(response.data);
-      setError(null);
+      const userData = await authService.getCurrentUser();
+
+      if (userData) {
+        setUser(userData);
+        setError(null);
+      } else {
+        console.error("No user data received from getCurrentUser");
+        setUser(null);
+        setError("Failed to fetch user information");
+        localStorage.removeItem("authToken");
+      }
     } catch (err) {
+      console.error("Error fetching user information:", err);
       setUser(null);
       setError("Failed to fetch user information");
+      localStorage.removeItem("authToken");
       throw err;
     }
   };
 
-  // Login function
   const login = async (googleToken: string) => {
     setLoading(true);
     try {
-      // Exchange Google token for JWT token
-      const response = await authAPI.googleLogin(googleToken);
-      
-      // Get JWT token from response
-      const { token } = response.data;
-      
-      // Store JWT token in localStorage
-      localStorage.setItem("authToken", token);
-      
-      // Fetch user info using the JWT token
-      await fetchUserInfo();
+      // Add detailed logging to track the API response
+      const authResponse = await authService.googleLogin(googleToken);
+
+      console.log("Login successful, auth response:", {
+        hasToken: !!authResponse.token,
+        tokenLength: authResponse.token?.length,
+        hasUser: !!authResponse.user,
+        user: authResponse.user
+          ? {
+              id: authResponse.user.id,
+              email: authResponse.user.email,
+              name: authResponse.user.name,
+              picture: authResponse.user.picture,
+            }
+          : null,
+      });
+
+      setUser(authResponse.user);
+      setError(null);
+      toast.success("Successfully logged in");
     } catch (err) {
       console.error("Login error:", err);
       setError("Login failed");
+      toast.error("Login failed. Please try again.");
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Logout function
   const logout = () => {
-    localStorage.removeItem("authToken");
+    authService.logout();
     setUser(null);
+    toast.success("Successfully logged out");
   };
 
-  // Context value
+  const isAuthenticated =
+    !!user || (!!localStorage.getItem("authToken") && !error);
+
   const value = {
     user,
     loading,
     error,
-    isAuthenticated: !!user,
+    isAuthenticated,
     login,
     logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Custom hook to use the auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };
