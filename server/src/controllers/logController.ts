@@ -86,9 +86,7 @@ export const createLog = async (req: Request, res: Response): Promise<void> => {
     const log = await prisma.log.create({
       data: {
         userId,
-        // Use dayjs to handle the date with timezone consideration
-        // Parse the date string and create a date object at noon to avoid timezone issues
-        date: dayjs(date || dayjs().format('YYYY-MM-DD')).hour(12).minute(0).second(0).toDate(),
+        date: dayjs(date || dayjs().format('YYYY-MM-DD')).startOf('day').toDate(),
         mood,
         anxiety,
         sleepHours: sleepHours || null,
@@ -224,9 +222,15 @@ export const updateLog = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const updateData = { ...req.body };
+
+    if (updateData.date) {
+      updateData.date = dayjs(updateData.date).startOf('day').toDate();
+    }
+
     const updatedLog = await prisma.log.update({
       where: { id: logId },
-      data: req.body
+      data: updateData
     });
 
     emitLogUpdated(userId, updatedLog);

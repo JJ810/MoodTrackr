@@ -93,14 +93,23 @@ export const emitLogCreated = async (userId: string, logData: any): Promise<void
     try {
       // Import prisma client and format functions here to avoid circular dependencies
       const { PrismaClient } = require('@prisma/client');
-      const { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } = require('date-fns');
+      const dayjs = require('dayjs');
+      const utc = require('dayjs/plugin/utc');
+      const timezone = require('dayjs/plugin/timezone');
+      const weekOfYear = require('dayjs/plugin/weekOfYear');
+      const weekday = require('dayjs/plugin/weekday');
+
+      dayjs.extend(utc);
+      dayjs.extend(timezone);
+      dayjs.extend(weekOfYear);
+      dayjs.extend(weekday);
       const prisma = new PrismaClient();
 
       // Get current date ranges for both weekly and monthly views
-      const weeklyStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-      const weeklyEndDate = format(endOfWeek(new Date()), 'yyyy-MM-dd');
-      const monthlyStartDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-      const monthlyEndDate = format(endOfMonth(new Date()), 'yyyy-MM-dd');
+      const weeklyStartDate = dayjs().startOf('week').format('YYYY-MM-DD');
+      const weeklyEndDate = dayjs().endOf('week').format('YYYY-MM-DD');
+      const monthlyStartDate = dayjs().startOf('month').format('YYYY-MM-DD');
+      const monthlyEndDate = dayjs().endOf('month').format('YYYY-MM-DD');
 
       const weeklyLogs = await prisma.log.findMany({
         where: {
@@ -158,7 +167,7 @@ export const emitLogCreated = async (userId: string, logData: any): Promise<void
 
       const formatLogs = (logs: any[]) => logs.map(log => ({
         date: log.date.toISOString(),
-        formattedDate: format(new Date(log.date), 'MMM dd'),
+        formattedDate: dayjs(log.date).format('MMM DD'),
         id: log.id,
         mood: log.mood || 0,
         anxiety: log.anxiety || 0,
@@ -199,13 +208,22 @@ export const emitLogUpdated = async (userId: string, logData: any): Promise<void
   if (io) {
     try {
       const { PrismaClient } = require('@prisma/client');
-      const { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } = require('date-fns');
+      const dayjs = require('dayjs');
+      const utc = require('dayjs/plugin/utc');
+      const timezone = require('dayjs/plugin/timezone');
+      const weekOfYear = require('dayjs/plugin/weekOfYear');
+      const weekday = require('dayjs/plugin/weekday');
+
+      dayjs.extend(utc);
+      dayjs.extend(timezone);
+      dayjs.extend(weekOfYear);
+      dayjs.extend(weekday);
       const prisma = new PrismaClient();
 
-      const weeklyStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-      const weeklyEndDate = format(endOfWeek(new Date()), 'yyyy-MM-dd');
-      const monthlyStartDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-      const monthlyEndDate = format(endOfMonth(new Date()), 'yyyy-MM-dd');
+      const weeklyStartDate = dayjs().startOf('week').format('YYYY-MM-DD');
+      const weeklyEndDate = dayjs().endOf('week').format('YYYY-MM-DD');
+      const monthlyStartDate = dayjs().startOf('month').format('YYYY-MM-DD');
+      const monthlyEndDate = dayjs().endOf('month').format('YYYY-MM-DD');
 
       const weeklyLogs = await prisma.log.findMany({
         where: {
@@ -263,7 +281,7 @@ export const emitLogUpdated = async (userId: string, logData: any): Promise<void
 
       const formatLogs = (logs: any[]) => logs.map(log => ({
         date: log.date.toISOString(),
-        formattedDate: format(new Date(log.date), 'MMM dd'),
+        formattedDate: dayjs(log.date).format('MMM DD'),
         id: log.id,
         mood: log.mood || 0,
         anxiety: log.anxiety || 0,
@@ -304,13 +322,22 @@ export const emitLogDeleted = async (userId: string, logId: string): Promise<voi
   if (io) {
     try {
       const { PrismaClient } = require('@prisma/client');
-      const { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } = require('date-fns');
+      const dayjs = require('dayjs');
+      const utc = require('dayjs/plugin/utc');
+      const timezone = require('dayjs/plugin/timezone');
+      const weekOfYear = require('dayjs/plugin/weekOfYear');
+      const weekday = require('dayjs/plugin/weekday');
+
+      dayjs.extend(utc);
+      dayjs.extend(timezone);
+      dayjs.extend(weekOfYear);
+      dayjs.extend(weekday);
       const prisma = new PrismaClient();
 
-      const weeklyStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-      const weeklyEndDate = format(endOfWeek(new Date()), 'yyyy-MM-dd');
-      const monthlyStartDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-      const monthlyEndDate = format(endOfMonth(new Date()), 'yyyy-MM-dd');
+      const weeklyStartDate = dayjs().startOf('week').format('YYYY-MM-DD');
+      const weeklyEndDate = dayjs().endOf('week').format('YYYY-MM-DD');
+      const monthlyStartDate = dayjs().startOf('month').format('YYYY-MM-DD');
+      const monthlyEndDate = dayjs().endOf('month').format('YYYY-MM-DD');
 
       const weeklyLogs = await prisma.log.findMany({
         where: {
@@ -370,7 +397,7 @@ export const emitLogDeleted = async (userId: string, logId: string): Promise<voi
       // Format logs for the client
       const formatLogs = (logs: any[]) => logs.map(log => ({
         date: log.date.toISOString(),
-        formattedDate: format(new Date(log.date), 'MMM dd'),
+        formattedDate: dayjs(log.date).format('MMM DD'),
         id: log.id,
         mood: log.mood || 0,
         anxiety: log.anxiety || 0,

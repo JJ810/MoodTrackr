@@ -1,8 +1,10 @@
-import { endOfMonth, endOfWeek, format, startOfMonth, startOfWeek } from 'date-fns';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import weekday from 'dayjs/plugin/weekday';
+
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
 import { create } from 'zustand';
@@ -10,6 +12,8 @@ import { create } from 'zustand';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isSameOrBefore);
+dayjs.extend(weekOfYear);
+dayjs.extend(weekday);
 
 import api from '@/lib/api';
 import type { MoodLog } from '@/lib/api/types';
@@ -103,11 +107,11 @@ const useMoodStore = create<MoodState>((set, get) => ({
             let startDate, endDate;
 
             if (mode === "weekly") {
-                startDate = format(startOfWeek(new Date()), "yyyy-MM-dd");
-                endDate = format(endOfWeek(new Date()), "yyyy-MM-dd");
+                startDate = dayjs().startOf('week').format("YYYY-MM-DD");
+                endDate = dayjs().endOf('week').format("YYYY-MM-DD");
             } else {
-                startDate = format(startOfMonth(new Date()), "yyyy-MM-dd");
-                endDate = format(endOfMonth(new Date()), "yyyy-MM-dd");
+                startDate = dayjs().startOf('month').format("YYYY-MM-DD");
+                endDate = dayjs().endOf('month').format("YYYY-MM-DD");
             }
 
             console.log(`Fetching data for ${mode} view: ${startDate} to ${endDate}`);
@@ -120,7 +124,7 @@ const useMoodStore = create<MoodState>((set, get) => ({
                 const formattedData = logs.map((log: MoodLog) => ({
                     id: log.id,
                     date: log.date,
-                    formattedDate: format(new Date(log.date), "MMM dd"),
+                    formattedDate: dayjs(log.date).format("MMM DD"),
                     mood: log.mood || 0,
                     anxiety: log.anxiety || 0,
                     sleepHours: log.sleepHours || 0,
@@ -228,13 +232,13 @@ const useMoodStore = create<MoodState>((set, get) => ({
 
             let shouldAddToChart = false;
             if (state.viewMode === "weekly") {
-                const weekStart = startOfWeek(new Date());
-                const weekEnd = endOfWeek(new Date());
+                const weekStart = dayjs().startOf('week').toDate();
+                const weekEnd = dayjs().endOf('week').toDate();
                 console.log('Week range:', weekStart, 'to', weekEnd);
                 shouldAddToChart = logDate >= weekStart && logDate <= weekEnd;
             } else {
-                const monthStart = startOfMonth(new Date());
-                const monthEnd = endOfMonth(new Date());
+                const monthStart = dayjs().startOf('month').toDate();
+                const monthEnd = dayjs().endOf('month').toDate();
                 console.log('Month range:', monthStart, 'to', monthEnd);
                 shouldAddToChart = logDate >= monthStart && logDate <= monthEnd;
             }
@@ -246,7 +250,7 @@ const useMoodStore = create<MoodState>((set, get) => ({
                 const formattedNewLog: ChartData = {
                     id: newLog.id,
                     date: dateStr,
-                    formattedDate: format(logDate, "MMM dd"),
+                    formattedDate: dayjs(logDate).format("MMM DD"),
                     mood: newLog.mood || 0,
                     anxiety: newLog.anxiety || 0,
                     sleepHours: newLog.sleepHours || 0,
@@ -276,7 +280,7 @@ const useMoodStore = create<MoodState>((set, get) => ({
                     return { cachedData: updatedCache };
                 });
 
-                toast.success(`New mood log added for ${format(logDate, 'MMM dd')}`);
+                toast.success(`New mood log added for ${dayjs(logDate).format('MMM DD')}`);
             } else {
                 console.log('Log not added to chart because it\'s outside the current view range');
             }
@@ -323,7 +327,7 @@ const useMoodStore = create<MoodState>((set, get) => ({
                 }
             }));
 
-            toast.success(`Mood log updated for ${format(new Date(updatedLog.date), "MMM dd")}`);
+            toast.success(`Mood log updated for ${dayjs(updatedLog.date).format("MMM DD")}`);
         });
 
         // Handle mood log deleted event
